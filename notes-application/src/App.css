@@ -13,13 +13,14 @@
   color: var(--text);
 }
 .searchInput{
-  width: 95%;
+  width: 94.5%;
   padding: 0.5rem;
   border: 1px solid var(--accent);
   border-radius: 0.25rem;
-  font-size: 1rem;
+  font-size: 15px;
   background-color: var(--bg);
   outline: none;
+  margin-left: 1rem;
   color: var(--text);
 }
 .notes{
@@ -42,4 +43,28 @@
   top: 0;
   right: 10px;
   padding: 0.25rem;
+}
+.add-btn{
+  padding: 5px 10px;
+  border: none;
+  border-radius: 0.25rem;
+  background-color: var(--accent);
+  color: var(--bg);
+  font-size: 15px;
+  cursor: pointer;
+}
+.addInput{
+  width: 89%;
+  padding: 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.25rem;
+  font-size: 15px;
+  background-color: var(--bg);
+  outline: none;
+  color: var(--text);
+}
+.addForm{
+  display: flex;
+  gap: 10px;
+  padding: 1rem;
 }
