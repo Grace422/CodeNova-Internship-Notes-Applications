@@ -68,3 +68,17 @@
   gap: 10px;
   padding: 1rem;
 }
+.note-icons{
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+.delete, .edit{
+  color: var(--bg);
+  font-size: 15px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+}
