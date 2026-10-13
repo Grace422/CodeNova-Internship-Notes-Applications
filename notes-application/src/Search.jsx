@@ -1,8 +1,7 @@
 import React from 'react'
 import './App.css'
 import AddNote from './AddNote'
-import deleteImage from './assets/delete.png'
-import editImage from './assets/edit-text.png'
+import { SquarePen, Trash } from 'lucide-react'
 
 export default function Search() {
   return (
@@ -15,8 +14,8 @@ export default function Search() {
             <li className='notes'>Note</li>
             <p className='form-date'>15 Mar</p>
             <div className='note-icons'>
-                <img src={editImage} alt="icon" className='edit'/>
-                <img src={deleteImage} alt="icon" className='delete'/>
+                <SquarePen size={20}/>
+                <Trash size={20} />
             </div>
           </ul>
         </form>
