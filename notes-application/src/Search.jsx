@@ -1,6 +1,6 @@
 import React from 'react'
 import './App.css'
-import AddNote from './frontend/AddNote'
+import AddNote from './AddNote'
 import { SquarePen, Trash } from 'lucide-react'
 
 export default function Search() {

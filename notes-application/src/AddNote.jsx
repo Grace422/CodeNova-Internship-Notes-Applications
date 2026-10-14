@@ -1,37 +1,58 @@
 import React, {useState, useEffect} from 'react'
 
+const API_URL = "http://localhost:5038/api/notesapp/addnotes";
+
 export default function AddNote() {
-    let [value, setValue] = useState("");
-    let [notes, setNotes] = useState([]);
-    const API_URL = "http://localhost:5038/api/notesapp/addnote";
+    let [title, setTitle] = useState("");
+    let [description, setDescription] = useState("");
+    let [message, setMessage] = useState("");
 
 
     function handleChange(event){
-        setValue(event.target.value);
+        setTitle(event.target.value);
     }
-    function handleSubmit(event){
+
+    function manageChange(event){
+        setDescription(event.target.value);
+    }
+
+    async function handleSubmit(event){
         event.preventDefault();
-        const refreshNotes = async () => {
-         try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        setNotes(data);
-        } catch (error) {
-            console.error("Error loading notes:", error);
+        if(!title.trim() || !description.trim()){
+            setMessage("Title and description are required")
+            return;
         }
-    };
-    useEffect(() => {
-        refreshNotes();
-    }, []);
-        setValue('');
+        try{
+            const formData = new formData();
+            formData.append("title", title.trim());
+            formData.append("description", description.trim())
+            
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: formData,
+            });
+
+            if(!response.ok){
+                throw new Error("Failed to add note")
+            }
+
+            setTitle("")
+            setDescription("")
+            setMessage("Note added successfully")
+            await onAdded;
+        }catch(error){
+            setMessage("error.message")
+        }
     }
     
   return (
     <div>
         <form className="addForm" onSubmit={handleSubmit}>
-            <input type="text" onChange={handleChange} value={value} className="addInput" placeholder="Type in a task" />
+            <input type="text" onChange={handleChange} value={title} className="addInput" placeholder="Give a title to your note" required/>
+            <textarea placeholder='Describe your note here' value={description} onChange={manageChange} required/>
             <button type="submit" className="add-btn">Add Task</button>
         </form>
+        {message && <p>{message}</p>}
     </div>
   )
 }

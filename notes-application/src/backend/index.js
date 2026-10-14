@@ -42,10 +42,17 @@ app.get('/api/notesapp/getnotes', async(request, response) => {
 app.post('/api/notesapp/addnote', multer().none(), async (request, response) => {
     try {
         const collection = database.collection("NotesAppCollection");
+        const {title, description} = request.body;
+        if(!title.trim() || !description.trim()){
+            return response.status(400).json({
+                error: "Title and description are required"
+            })
+        }
         const numOfDocs = await collection.estimatedDocumentCount({});
         await collection.insertOne({
             id: (numOfDocs + 1).toString(),
-            description: request.body.newNotes,
+            title: title.trim(),
+            description: description.trim()
         });
 
         response.json("Added Successfully");
@@ -74,14 +81,14 @@ app.delete('api/notesapp/deletenote/:id', async(request,response) => {
 
 app.put('api/notesapp/modifynote/:id', async(request, response) => {
     try{
-        const {description} = request.body;
+        const {title,description} = request.body;
 
-        if(!description?.trim()) {
-            return response.status(400).json({ error: "Description is required" });
+        if(!title?.trim() || !description?.trim()) {
+            return response.status(400).json({ error: "Title and description are required" });
         }
 
         const note = await Note.findByIdAndUpdate(
-            request.params.id, { description }, 
+            request.params.id, { title, description }, 
             { new: true, runValidators: true }
         );
 
