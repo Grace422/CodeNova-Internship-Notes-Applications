@@ -71,3 +71,28 @@ app.delete('api/notesapp/deletenote/:id', async(request,response) => {
         response.status(500).send({ error: "Internal Server Error" });
     }
 })
+
+app.put('api/notesapp/modifynote/:id', async(request, response) => {
+    try{
+        const {description} = request.body;
+
+        if(!description?.trim()) {
+            return response.status(400).json({ error: "Description is required" });
+        }
+
+        const note = await Note.findByIdAndUpdate(
+            request.params.id, { description }, 
+            { new: true, runValidators: true }
+        );
+
+        if(!note){
+            return response.status(404).json({ error: "Note not found" });      
+        }
+        response.json(note);
+    }catch(error){
+        const invalidId = error.name === 'CastError';
+
+        response.status(invalidId ? 400 : 500).json
+        ({ error: invalidId ? "Invalid note ID" : "Failed to update note" });   
+    }
+})
