@@ -79,7 +79,7 @@ app.delete('api/notesapp/deletenote/:id', async(request,response) => {
     }
 })
 
-app.put('api/notesapp/modifynote/:id', async(request, response) => {
+app.put('api/notesapp/editnote/:id', async(request, response) => {
     try{
         const {title,description} = request.body;
 
@@ -103,3 +103,26 @@ app.put('api/notesapp/modifynote/:id', async(request, response) => {
         ({ error: invalidId ? "Invalid note ID" : "Failed to update note" });   
     }
 })
+
+app.get("/api/notesapp/searchnotes", async (request, response) => {
+    try {
+        const collection = database.collection("NotesAppCollection");
+        const query = (request.query.q || "").trim();
+
+        if (!query) {
+            return response.json(await collection.find({}).toArray());
+        }
+
+        // Escape special regex characters in the user's query.
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        const notes = await collection.find({
+            description: { $regex: escapedQuery, $options: "i" }
+        }).toArray();
+
+        response.json(notes);
+    } catch (error) {
+        console.error("Error searching notes:", error);
+        response.status(500).json({ error: "Internal Server Error" });
+    }
+});
