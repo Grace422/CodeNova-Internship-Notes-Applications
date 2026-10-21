@@ -1,128 +1,207 @@
-// import 'dotenv/config';
-// import dotenv from 'dotenv';
-// import path from 'path';
-import express from 'express';
-import { MongoClient } from 'mongodb';
-import cors from 'cors';
-import multer from 'multer';
-// dotenv.config({ path: path.resolve(process.cwd(), '.env') }); 
+import "dotenv/config";
+import express from "express";
+import { MongoClient } from "mongodb";
+import cors from "cors";
+import multer from "multer";
+import { randomUUID } from "node:crypto";
 
-var app = express();
+const app = express();
+
 app.use(cors());
+app.use(express.json());
 
-var CONNECTION_STRING = "mongodb+srv://kwahamgrace:grace123@cluster0.bk0obc3.mongodb.net/?appName=Cluster0";
-var DATABASENAME = "NotesApp";
-var database;
+const PORT = 5000;
+const CONNECTION_STRING = process.env.DATABASE_URL;
+const DATABASENAME = process.env.DATABASE_NAME;
 const client = new MongoClient(CONNECTION_STRING);
+let database;
 
-app.listen(5000, async() => {
-    console.log("Server is running on port 5000");
-    try{
-        console.log("Connecting to MongoDB...");
-        await client.connect();
-        database = client.db(DATABASENAME);
-        console.log("Mongo DB Connection Successful");
-    }
-    catch(error){
-        console.error("Error connecting to MongoDB:", error);
-    }
-})
+const collection = () =>
+    database.collection("NotesAppCollection");
 
-app.get('/api/notesapp/getnotes', async(request, response) => {
-    try{
-        const results = await database.collection('NotesAppCollection').find({}).toArray();
-        response.send(results);
-    }
-    catch(error){
+// Get all notes
+app.get("/api/notesapp/getnotes", async (req, res) => {
+    try {
+        const notes = await collection().find({}).toArray();
+        res.json(notes);
+    } catch (error) {
         console.error("Error fetching notes:", error);
-        response.status(500).send({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Failed to fetch notes." });
     }
 });
 
-app.post('/api/notesapp/addnote', multer().none(), async (request, response) => {
+// Add a note
+app.post(
+    "/api/notesapp/addnote",
+    multer().none(),
+    async (req, res) => {
+        try {
+            const title = req.body.title?.trim();
+            const description = (
+                req.body.description ?? req.body.newNotes ?? ""
+            ).trim();
+
+            if (!title || !description) {
+                return res.status(400).json({
+                    error: "Title and description are required."
+                });
+            }
+
+            const note = {
+                id: randomUUID(),
+                title,
+                description
+            };
+
+            await collection().insertOne(note);
+
+            res.status(201).json({
+                message: "Note added successfully.",
+                note
+            });
+        } catch (error) {
+            console.error("Error adding note:", error);
+            res.status(500).json({ error: "Failed to add note." });
+        }
+    }
+);
+
+// Search notes by title or description
+app.get("/api/notesapp/searchnotes", async (req, res) => {
     try {
-        const collection = database.collection("NotesAppCollection");
-        const {title, description} = request.body;
-        if(!title.trim() || !description.trim()){
-            return response.status(400).json({
-                error: "Title and description are required"
-            })
-        }
-        const numOfDocs = await collection.estimatedDocumentCount({});
-        await collection.insertOne({
-            id: (numOfDocs + 1).toString(),
-            title: title.trim(),
-            description: description.trim()
-        });
-
-        response.json("Added Successfully");
-    } 
-    catch (error) {
-        console.error("Error adding note:", error);
-        response.status(500).send({ error: "Internal Server Error" });
-    }
-});
-
-app.delete('api/notesapp/deletenote/:id', async(request,response) => {
-    try{
-        const collection = database.collection("NotesAppCollection");
-        const noteId = request.params.id;
-        const result = await collection.deleteOne({ id: noteId });
-        if (result.deletedCount === 0) {
-            return response.status(404).json({ error: "Note not found" });
-        }
-        response.json("Deleted Successfully");
-    }
-    catch (error) {
-        console.error("Error deleting note:", error);
-        response.status(500).send({ error: "Internal Server Error" });
-    }
-})
-
-app.put('api/notesapp/editnote/:id', async(request, response) => {
-    try{
-        const {title,description} = request.body;
-
-        if(!title?.trim() || !description?.trim()) {
-            return response.status(400).json({ error: "Title and description are required" });
-        }
-
-        const note = await Note.findByIdAndUpdate(
-            request.params.id, { title, description }, 
-            { new: true, runValidators: true }
-        );
-
-        if(!note){
-            return response.status(404).json({ error: "Note not found" });      
-        }
-        response.json(note);
-    }catch(error){
-        const invalidId = error.name === 'CastError';
-
-        response.status(invalidId ? 400 : 500).json
-        ({ error: invalidId ? "Invalid note ID" : "Failed to update note" });   
-    }
-})
-
-app.get("/api/notesapp/searchnotes", async (request, response) => {
-    try {
-        const collection = database.collection("NotesAppCollection");
-        const query = (request.query.q || "").trim();
+        const query = String(req.query.q || "").trim();
 
         if (!query) {
-            return response.json(await collection.find({}).toArray());
+            const notes = await collection().find({}).toArray();
+            return res.json(notes);
         }
 
-        // Escape special regex characters in the user's query.
-        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const escapedQuery = query.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+        );
 
-        const notes = await collection.find({
-            description: { $regex: escapedQuery, $options: "i" }
-        }).toArray();
+        const notes = await collection()
+            .find({
+                $or: [
+                    {
+                        title: {
+                            $regex: escapedQuery,
+                            $options: "i"
+                        }
+                    },
+                    {
+                        description: {
+                            $regex: escapedQuery,
+                            $options: "i"
+                        }
+                    }
+                ]
+            })
+            .toArray();
 
-        response.json(notes);
+        res.json(notes);
     } catch (error) {
         console.error("Error searching notes:", error);
-        response.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Failed to search notes." });
     }
 });
+
+// Edit a note
+
+
+app.put("/api/notesapp/editnote/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const title = req.body.title?.trim();
+        const description = req.body.description?.trim();
+
+        if (!title || !description) {
+            return res.status(400).json({
+                error: "Title and description are required."
+            });
+        }
+
+        const existingNote = await collection().findOne({
+            id: id
+        });
+
+        const numericId = Number(id);
+        const filter = existingNote
+            ? { id: id }
+            : Number.isFinite(numericId) && id.trim() !== ""
+                ? { id: numericId }
+                : { id: id };
+
+        const result = await collection().updateOne(
+            filter,
+            {
+                $set: {
+                    title: title,
+                    description: description
+                }
+            }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                error: "Note not found."
+            });
+        }
+
+        res.json({
+            message: "Note updated successfully."
+        });
+    } catch (error) {
+        console.error("Edit error:", error);
+        res.status(500).json({
+            error: error.message || "Failed to update note."
+        });
+    }
+});
+
+
+
+// Delete a note
+app.delete("/api/notesapp/deletenote/:id", async (req, res) => {
+    try {
+        const result = await collection().deleteOne({
+            id: req.params.id
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                error: "Note not found."
+            });
+        }
+
+        res.json({ message: "Note deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        res.status(500).json({ error: "Failed to delete note." });
+    }
+});
+
+// Connect to MongoDB before starting the server
+async function startServer() {
+    try {
+        console.log("Connecting to MongoDB...");
+
+        await client.connect();
+        database = client.db(DATABASENAME);
+
+        await database.command({ ping: 1 });
+
+        console.log("MongoDB connection successful.");
+
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start backend:", error);
+        await client.close().catch(() => { });
+        process.exitCode = 1;
+    }
+}
+
+startServer();

@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState} from 'react'
 
-const API_URL = "http://localhost:5038/api/notesapp/addnotes";
+const API_URL = "http://localhost:5000/api/notesapp/addnote";
 
-export default function AddNote() {
+export default function AddNote({onAdded}) {
     let [title, setTitle] = useState("");
     let [description, setDescription] = useState("");
     let [message, setMessage] = useState("");
@@ -23,9 +23,9 @@ export default function AddNote() {
             return;
         }
         try{
-            const formData = new formData();
+            const formData = new FormData();
             formData.append("title", title.trim());
-            formData.append("description", description.trim())
+            formData.append("newNotes", description.trim())
             
             const response = await fetch(API_URL, {
                 method: "POST",
@@ -39,9 +39,9 @@ export default function AddNote() {
             setTitle("")
             setDescription("")
             setMessage("Note added successfully")
-            await onAdded;
+            await onAdded?.();
         }catch(error){
-            setMessage("error.message")
+            setMessage(error.message || "Unable to add note")
         }
     }
     

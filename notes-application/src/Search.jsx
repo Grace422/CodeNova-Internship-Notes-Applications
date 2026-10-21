@@ -1,56 +1,46 @@
 import React, { useState } from 'react'
 import './App.css'
-import AddNote from './AddNote'
-import Note from './Note'
 
-const API = "http://localhost:5000/api/notesapp/searchnotes";
+const API_URL = "http://localhost:5000/api/notesapp/searchnotes";
 
-export default function Search({OnResults, onReset}) {
+export default function Search({ onResults, onReset }) {
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
 
-  function handleChange(event){
-        setQuery(event.target.value);
-    }
+  function handleChange(event) {
+    setQuery(event.target.value);
+  }
 
-  async function handleSearch(event){
+  async function handleSearch(event) {
     event.preventDefault();
-    if(!query.trim()){
+    if (!query.trim()) {
       onReset();
-      setMessage();
+      setMessage("");
       return;
     }
-    try{
+    try {
       const response = await fetch(
-        `{API_URL}/${encodedURIComponent(query.id)}`
+        `${API_URL}?q=${encodeURIComponent(query.trim())}`
       )
-      if(!response.ok){
+      if (!response.ok) {
         throw new Error("Failed to update note")
       }
 
       const results = await response.json();
-      OnResults(results);
-      setMessage(results.lenght ? `${results.lenght} note not found` : "No matching note found")
-    }catch(error){
+      onResults(results);
+      setMessage(results.length ? `${results.length} note found` : "No matching note found")
+    } catch (error) {
       setMessage(error.message)
     }
-  }
-  function clearSearch() {
-    setQuery("");
-    setMessage("");
-    onReset();
   }
 
   return (
     <section id="creation">
-        <h1 className="title">Notes App</h1>
-        <form action="" className="searchForm" onSubmit={handleSearch}>
-            <AddNote />
-          <input type="text" placeholder="Search..." className="searchInput" onChange={handleChange}/>
-          <button type="submit">Search</button>
-            {/* <Note /> */}
-        </form>
-        {message && <p className="message">{message}</p>}
-      </section>
+      <form action="" className="searchForm" onSubmit={handleSearch}>
+        <input type="text" placeholder="Search..." className="searchInput" onChange={handleChange} value={query} />
+        <button type="submit">Search</button>
+      </form>
+      {message && <p className="message">{message}</p>}
+    </section>
   )
 }
