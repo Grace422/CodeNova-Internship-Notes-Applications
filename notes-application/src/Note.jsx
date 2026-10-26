@@ -111,6 +111,7 @@ async function saveEdit(id) {
                     <button
                       type="button"
                       onClick={() => {
+
                         saveEdit(note.id)
                       }}
                     >
