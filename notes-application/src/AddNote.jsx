@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 
-const API_URL = "http://localhost:5000/api/notesapp/addnote";
+const API_URL = "https://codenova-internship-notes-applications.onrender.com/api/notesapp/addnote";
 
 export default function AddNote({onAdded}) {
     let [title, setTitle] = useState("");

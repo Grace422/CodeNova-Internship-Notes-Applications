@@ -5,7 +5,7 @@ import Search from './Search'
 import AddNote from './AddNote'
 import Note from './Note'
 
-const API_URL = "http://localhost:5000/api/notesapp";
+const API_URL = "https://codenova-internship-notes-applications.onrender.com/api/notesapp";
 
 function App() {
   const [notes, setNotes] = useState([]);

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { SquarePen, Trash } from 'lucide-react'
 import './App.css'
 
-const API_URL = "http://localhost:5000/api/notesapp"
+const API_URL = "https://codenova-internship-notes-applications.onrender.com/api/notesapp";
 
 export default function Note({ notes, onUpdated, onDeleted }) {
   let [title, setTitle] = useState("");

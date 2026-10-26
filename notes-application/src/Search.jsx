@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import './App.css'
 
-const API_URL = "http://localhost:5000/api/notesapp/searchnotes";
+const API_URL = "https://codenova-internship-notes-applications.onrender.com/api/notesapp/searchnotes";
 
 export default function Search({ onResults, onReset }) {
   const [query, setQuery] = useState("");
