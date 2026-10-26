@@ -15,6 +15,10 @@ app.use(
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+    res.send("Notes App API is running!");
+});
+
 const PORT = process.env.PORT || 5000;
 const CONNECTION_STRING = process.env.DATABASE_URL;
 const DATABASENAME = process.env.DATABASE_NAME;
