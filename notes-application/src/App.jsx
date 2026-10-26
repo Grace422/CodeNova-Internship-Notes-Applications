@@ -36,7 +36,7 @@ function App() {
 
   return (
     <section id="creation">
-      <h1 className='title'>Notes App</h1>
+        <h1 className='title'>Notes App</h1>
 
       <AddNote onAdded={fetchNotes} />
 

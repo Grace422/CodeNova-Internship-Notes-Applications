@@ -36,7 +36,7 @@ export default function Search({ onResults, onReset }) {
 
   return (
     <section id="creation">
-      <form action="" className="searchForm" onSubmit={handleSearch}>
+      <form action="" className="search-form" onSubmit={handleSearch}>
         <input type="text" placeholder="Search..." className="searchInput" onChange={handleChange} value={query} />
         <button type="submit">Search</button>
       </form>

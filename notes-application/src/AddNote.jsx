@@ -47,7 +47,7 @@ export default function AddNote({onAdded}) {
     
   return (
     <div>
-        <form className="addForm" onSubmit={handleSubmit}>
+        <form className="add-note-form" onSubmit={handleSubmit}>
             <input type="text" onChange={handleChange} value={title} className="addInput" placeholder="Give a title to your note" required/>
             <textarea placeholder='Describe your note here' value={description} onChange={manageChange} required/>
             <button type="submit" className="add-btn">Add Task</button>
