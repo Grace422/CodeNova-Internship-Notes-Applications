@@ -7,10 +7,15 @@ import { randomUUID } from "node:crypto";
 
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:5173"
+    })
+);
+
 app.use(express.json());
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const CONNECTION_STRING = process.env.DATABASE_URL;
 const DATABASENAME = process.env.DATABASE_NAME;
 const client = new MongoClient(CONNECTION_STRING);
@@ -195,7 +200,7 @@ async function startServer() {
         console.log("MongoDB connection successful.");
 
         app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
+            console.log(`Server is running on port ${PORT}`);
         });
     } catch (error) {
         console.error("Failed to start backend:", error);
